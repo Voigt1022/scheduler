@@ -4,6 +4,7 @@ import { Button, Container, Title } from 'rbx';
 
 const terms = { F: 'Fall', W: 'Winter', S: 'Spring'};
 
+
 const Banner = ({ title }) => (
   <h1 className="title">{ title }</h1>
 );
@@ -15,6 +16,25 @@ const getCourseTerm = course => (
 const getCourseNumber = course => (
   course.id.slice(1, 4)
 )
+
+const buttonState = selected => (
+  selected ? `button is-success is-selected` : 'button'
+);
+
+const TermSelector = ({ state }) => (
+  <div className="field has-addons">
+  { Object.values(terms)
+      .map(value => 
+        <button key={value}
+          className={ buttonState(value === state.term) }
+          onClick={ () => state.setTerm(value) }
+          >
+          { value }
+        </button>
+      )
+  }
+  </div>
+);
   
 const Course = ({ course }) => (
   <button className="button">
@@ -22,11 +42,20 @@ const Course = ({ course }) => (
   </button>
 );
 
-const CourseList = ({ courses }) => (
-  <div className="buttons">
-    {courses.map(course => <Course key={course.id} course={ course } />)}
-  </div>
-);
+const CourseList = ({ courses }) => {
+  const [term, setTerm] = React.useState('Fall');
+  const termCourses = courses.filter(course => term === getCourseTerm(course));
+  
+  return (
+    <React.Fragment>
+      <TermSelector state={ { term, setTerm } } />
+      <div className="buttons">
+        { termCourses.map(course =>
+           <Course key={ course.id } course={ course }  />) }
+      </div>
+    </React.Fragment>
+  );
+};
 
 const App = () => {
   const [schedule, setSchedule] = React.useState({ title: '', courses: [] });
