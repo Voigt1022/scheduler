@@ -1,6 +1,21 @@
 import React, { useState } from 'react';
 import 'rbx/index.css';
 import { Button, Container, Title } from 'rbx';
+import firebase from 'firebase/app';
+import 'firebase/database';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB48CGMrqrydJybU1oWK7TvxsmXIpEmd1Q",
+  authDomain: "scheduler-1b938.firebaseapp.com",
+  databaseURL: "https://scheduler-1b938.firebaseio.com",
+  projectId: "scheduler-1b938",
+  storageBucket: "scheduler-1b938.appspot.com",
+  messagingSenderId: "701762541056",
+  appId: "1:701762541056:web:b47a22ea068e1147c72ae5",
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database().ref();
 
 const terms = { F: 'Fall', W: 'Winter', S: 'Spring'};
 
@@ -118,25 +133,22 @@ const addScheduleTimes = schedule => ({
 });
 
 const App = () => {
-  const [schedule, setSchedule] = React.useState({ title: '', courses: [] });
-  const url = 'https://courses.cs.northwestern.edu/394/data/cs-courses.php';
+  const [schedule, setSchedule] = useState({ title: '', courses: [] });
 
-  React.useEffect(() => {
-    const fetchSchedule =  async () => {
-      const response = await fetch(url);
-      if (!response.ok) throw response;
-      const json = await response.json();
-      setSchedule(addScheduleTimes(json));
+  useEffect(() => {
+    const handleData = snap => {
+      if (snap.val()) setSchedule(addScheduleTimes(snap.val()));
     }
-    fetchSchedule();
-  }, [])
+    db.on('value', handleData, error => alert(error));
+    return () => { db.off('value', handleData); };
+  }, []);
 
   return (
-    <div className="container">
+    <Container>
       <Banner title={ schedule.title } />
       <CourseList courses={ schedule.courses } />
-    </div>
-  );
+    </Container>
+);
 };
 
 export default App;
