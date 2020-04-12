@@ -122,6 +122,19 @@ const timeParts = meets => {
   };
 };
 
+const saveCourse = (course, meets) => {
+  db.child('courses').child(course.id).update({meets})
+      .catch(error => alert(error));
+};
+
+const moveCourse = course => {
+  const meets = prompt('Enter new meeting data, in this format:', course.meets);
+  if (!meets) return;
+  const {days} = timeParts(meets);
+  if (days) saveCourse(course, meets);
+  else moveCourse(course);
+};
+
 const addCourseTimes = course => ({
   ...course,
   ...timeParts(course.meets)
@@ -129,7 +142,7 @@ const addCourseTimes = course => ({
 
 const addScheduleTimes = schedule => ({
   title: schedule.title,
-  courses: schedule.courses.map(addCourseTimes)
+  courses: Object.values(schedule.courses).map(addCourseTimes)
 });
 
 const App = () => {
